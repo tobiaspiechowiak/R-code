@@ -28,5 +28,7 @@ fit.single <- hclust(d,method="single")
 plot(fit.single,hang=-1,cex=.8, main="Single linkage cluster")
 dev.off()
 ###################################################
+#THERE DOES NOT SEEM TO BE A DIFFERENCE?!
 
+#Q2###################################################
 
