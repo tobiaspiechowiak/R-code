@@ -2,11 +2,14 @@ rm(list=ls())  #clear workspace
 
 opar.org <- par(no.readonly=TRUE)
 
-home <- "c:/Users/tpiechowiak/R code/R-code/Lektion 7/"
+#home <- "c:/Users/tpiechowiak/R code/R-code/Lektion 7/"
+home <- "c:/Users/tobiasp/Documents/Big Data/R-code/Lektion 7/"
 
 setwd(home)
 
-loc <-"c:/Users/tpiechowiak/Documents/R/win-library/3.3/"              # Use this folder for packages.
+#loc <-"c:/Users/tpiechowiak/Documents/R/win-library/3.3/" 
+loc <-"c:/Users/tobiasp/Documents/Big Data/R_packages/" 
+
 #
 #
 install.packages("randomForest",lib=loc)
@@ -89,7 +92,7 @@ nrtries <- c(2,sqrt(9),9) #number of tries at each node
 nrtree <- c(20,100,500) #number of trees in forest
 cname <- c("p=2","p=3","p=9")
 rname <- c("20","100","500")
-err.classification <- matrix(0,nrow=length(nrtree),ncol=length(nrtries),
+err.classification.rf <- matrix(0,nrow=length(nrtree),ncol=length(nrtries),
                              dimnames=list(rname,cname))
 
 
@@ -105,13 +108,13 @@ for(i in 1:3) {#for nrtree
     forest.pred <- predict(fit.forest, df.validate)          
     forest.perf <- table(df.validate$class, forest.pred,  
                          dnn=c("Actual", "Predicted")) 
-    err.classification[i,j] <- (1 - performance(forest.perf)) * 100 #calculate classification error percent
+    err.classification.rf[i,j] <- (1 - performance(forest.perf)) * 100 #calculate classification error percent
       
   }
 }
 
 # Save for later performance comparison:
-save(err.classification, file="perf_forest.perf") 
+save(err.classification.rf, file="perf_forest.perf") 
 
 
 #classification error 
@@ -133,14 +136,24 @@ save(err.classification, file="perf_forest.perf")
 #support vector machine
 
 set.seed(1234) 
-fit.svm <- svm(class~., data=df.train ) 
-#gamma default:  1/(data dimension)
+gamma.value <- c(1/50,1/9,2) #possible values of gamma 
+rname <- c("gamma=1/50","gamma=1/9","gamma=2")
+cname <- c("value")
+err.classification.svm <- matrix(0,nrow=length(gamma.value),ncol = 1,
+                                dimnames=list(rname,cname))
+
+for(i in 1:3){
+fit.svm <- svm(class~., data=df.train,gamma=gamma.value[i],
+               kernel="radial basis") 
+#gamma default:  1/(data dimension), in this case 1/9
 fit.svm 
 svm.pred <- predict(fit.svm, na.omit(df.validate)) 
 svm.perf <- table(na.omit(df.validate)$class,  
                   svm.pred, dnn=c("Actual", "Predicted")) 
-svm.perf 
+err.classification.svm[i] <- (1 - performance(svm.perf))*100
+
+}
 # Save for later performance comparison:
-save(svm.perf, file="perf_svm.perf") 
+save(err.classification.svm, file="perf_svm.perf") 
 #
 #
