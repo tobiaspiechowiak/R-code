@@ -2,13 +2,13 @@ rm(list=ls())  #clear workspace
 
 opar.org <- par(no.readonly=TRUE)
 
-#home <- "c:/Users/tpiechowiak/R code/R-code/Lektion 7/"
-home <- "c:/Users/tobiasp/Documents/Big Data/R-code/Lektion 7/"
+home <- "c:/Users/tpiechowiak/R code/R-code/Lektion 7/"
+#home <- "c:/Users/tobiasp/Documents/Big Data/R-code/Lektion 7/"
 
 setwd(home)
 
-#loc <-"c:/Users/tpiechowiak/Documents/R/win-library/3.3/" 
-loc <-"c:/Users/tobiasp/Documents/Big Data/R_packages/" 
+loc <-"c:/Users/tpiechowiak/Documents/R/win-library/3.3/" 
+#loc <-"c:/Users/tobiasp/Documents/Big Data/R_packages/" 
 
 #
 #
@@ -127,8 +127,7 @@ save(err.classification.rf, file="perf_forest.perf")
 #Is the random forest training on a sub-set of the training data at its single trees? 
 #How does that relate to the number of trees in the forest?
 #It seems that there is not a big difference in classification error for the 9 combinations on the 
-#test data set
-
+#test data set p=2 giving the best results independent of number of trees
 
 
 ################################################################################
@@ -136,24 +135,37 @@ save(err.classification.rf, file="perf_forest.perf")
 #support vector machine
 
 set.seed(1234) 
-gamma.value <- c(1/50,1/9,2) #possible values of gamma 
-rname <- c("gamma=1/50","gamma=1/9","gamma=2")
-cname <- c("value")
-err.classification.svm <- matrix(0,nrow=length(gamma.value),ncol = 1,
+gamma.value <- c(1/100,1/50,1/9,2,3) #possible values of gamma 
+cost.value <- c(0.1,1,2)
+rname <- c("gamma=1/100", "gamma=1/50","gamma=1/9","gamma=2","gamma=3")
+cname <- c("cost=0.1","cost=1","cost=2")
+err.classification.svm <- matrix(0,nrow=length(gamma.value),ncol = length(cost.value),
                                 dimnames=list(rname,cname))
 
-for(i in 1:3){
-fit.svm <- svm(class~., data=df.train,gamma=gamma.value[i],
-               kernel="radial basis") 
+for(i in 1:length(gamma.value)){
+  for(j in 1:length(cost.value)){
+fit.svm <- svm(class~., data=df.train,gamma=gamma.value[i],cost=cost.value[j],
+               kernel="radial") 
 #gamma default:  1/(data dimension), in this case 1/9
 fit.svm 
 svm.pred <- predict(fit.svm, na.omit(df.validate)) 
 svm.perf <- table(na.omit(df.validate)$class,  
                   svm.pred, dnn=c("Actual", "Predicted")) 
-err.classification.svm[i] <- (1 - performance(svm.perf))*100
-
+err.classification.svm[i,j] <- (1 - performance(svm.perf)) * 100
+}
 }
 # Save for later performance comparison:
 save(err.classification.svm, file="perf_svm.perf") 
-#
-#
+
+#cost=0.1   cost=1   cost=2
+#gamma=1/100  2.403846 1.442308 1.442308
+#gamma=1/50   1.923077 1.442308 1.442308
+#gamma=1/9    1.923077 1.442308 1.923077
+#gamma=2     12.980769 6.730769 6.250000
+#gamma=3     13.942308 7.692308 7.692308
+
+#not much difference in classification error for reasonable gammas. Larger errors for smaller costs and larger gammas. Smallest 
+#errors for cost =1 and p = 1/9 which confirm the recommendations from the literature. 
+
+
+
