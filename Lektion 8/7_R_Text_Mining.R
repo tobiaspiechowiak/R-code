@@ -70,9 +70,9 @@ corpus <- Corpus(docs_source) # Convert into a corpus.
 corpus                        # List what's in the corpus.
 str(corpus)
 head(corpus,15)
-#
-# Write document no. 1 in the corpus with one document.
+## Write document no. 1 in the corpus with one document.
 writeLines(as.character(corpus[[1]]))
+
 #
 # Cleaning the corpus
 corpus <- tm_map(corpus, content_transformer(tolower))
